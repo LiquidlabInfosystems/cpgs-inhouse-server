@@ -22,66 +22,53 @@ def chunk_data(image_data, chunk_size):
         chunks.append(image_data[i:i+chunk_size])
     return chunks
 
-# 3. Send Chunks over UDP
+
+
 def send_chunks(ip, port, chunks):
     sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     total_chunks = len(chunks)
-    
     for i, chunk in enumerate(chunks):
         # Add metadata (e.g., chunk number and total chunk count)
         metadata = f"{i+1}/{total_chunks}".encode('utf-8')
         message = metadata + b"|" + chunk
-        
         sock.sendto(message, (ip, port))  # Send each chunk to the receiver
         print(f"Sent chunk {i+1}/{total_chunks}")
-
     sock.close()
 
-# Function to update space status to the server
+
+
+
 def update_server():
     """Detects changes in space status and updates the main server."""
     current_spaces = get_space_info()
     if current_spaces != {}:
         NetworkSetting = NetworkSettings.objects.first()
         last_spaces = Variables.LAST_SPACES
-        changed_space = None
 
+        
+        # changed_space = None
         for space in range(Variables.TOTALSPACES):
-            if space in current_spaces and space in last_spaces:
-                if current_spaces[space]['spaceStatus'] != last_spaces[space]['spaceStatus']:
-                    changed_space = space
-                    break
-        # if changed_space is not None:
-    sd = current_spaces[0]
-            # print("Changes found in space index", changed_space)
-    data_to_send = {
-        "spaceID": sd['spaceID'],
-        "spaceStatus": sd['spaceStatus'],
-        "licensePlate": sd['licensePlate']
-    }
+            # if space in current_spaces and space in last_spaces:
+            if current_spaces[space]['spaceStatus'] != last_spaces[space]['spaceStatus']:
+                sd = current_spaces[space]
+                data_to_send = {
+                    "spaceID": sd['spaceID'],
+                    "spaceStatus": sd['spaceStatus'],
+                    "licensePlate": sd['licensePlate']
+                }
+                sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+                # print("server setting: ",NetworkSetting.server_ip, NetworkSetting.server_port)
+                CHUNK_SIZE = 20
+                MESSAGE = f"{data_to_send}".encode()    
+                chunks = chunk_data(MESSAGE, CHUNK_SIZE)
+                for chuck in chunks:
+                    sock.sendto(chuck, (NetworkSetting.server_ip, NetworkSetting.server_port))
+                sock.close()
+                print("Dectection update send to server - spaceID : ",data_to_send['spaceID'], ", status : ",data_to_send['spaceStatus'], ", server Address : ", NetworkSetting.server_ip, ":", NetworkSetting.server_port)
+                break
 
 
-    # Create UDP socket
-    sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-    print("server setting: ",NetworkSetting.server_ip, NetworkSetting.server_port)
 
-    CHUNK_SIZE = 20
-    CHUNKS = []
-    MESSAGE = f"{data_to_send}".encode()    
-    chunks = chunk_data(MESSAGE, CHUNK_SIZE)
-
-     # Convert string to bytes
-
-    # send as chunks
-    for chuck in chunks:
-        sock.sendto(chuck, (NetworkSetting.server_ip, NetworkSetting.server_port))
-
-    sock.close()
-
-    print('send successfull')
-
-def get_OCR():
-    number  = request.post("http")
 
 def change_hostname(new_hostname):
     try:
