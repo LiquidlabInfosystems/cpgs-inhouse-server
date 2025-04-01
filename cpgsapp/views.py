@@ -43,12 +43,20 @@ def ValidateUser(req):
 
 # Function to monitor mode continuously
 def ModeMonitor():
-    print("Running Monitoring Mode")
+    text_art = """
+            /////  //////   //////     //////
+            //     //  //   //         //
+            //     //////   //  /////  ///////
+            //     //       //  // //       //
+            /////  //       ////// //  ///////
+            """                  
+    print(text_art)
     while True:
         time.sleep(1)
         mode = get_mode_info()
         if mode == "live":
             liveMode()
+
 
 # RebootSystem
 def reboot(req):
@@ -201,9 +209,9 @@ class CalibrateHandler(APIView):
                 save_space_coordinates(data['x'], data['y'])
                 return Response(status=HTTP_200_OK)
             
+
             if task == 'GET_CAMERA_VIEW_WITH_COORDINATES':
                 frame_bytes = get_camera_view_with_space_coordinates()
-                # Send raw bytes directly, bypassing JSON renderer
                 return HttpResponse(frame_bytes, content_type="image/jpeg")
             
             
