@@ -44,11 +44,7 @@ def update_server():
     if current_spaces != {}:
         NetworkSetting = NetworkSettings.objects.first()
         last_spaces = Variables.LAST_SPACES
-
-        
-        # changed_space = None
         for space in range(Variables.TOTALSPACES):
-            # if space in current_spaces and space in last_spaces:
             if current_spaces[space]['spaceStatus'] != last_spaces[space]['spaceStatus']:
                 sd = current_spaces[space]
                 data_to_send = {
@@ -57,7 +53,6 @@ def update_server():
                     "licensePlate": sd['licensePlate']
                 }
                 sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-                # print("server setting: ",NetworkSetting.server_ip, NetworkSetting.server_port)
                 CHUNK_SIZE = 20
                 MESSAGE = f"{data_to_send}".encode()    
                 chunks = chunk_data(MESSAGE, CHUNK_SIZE)
@@ -69,26 +64,51 @@ def update_server():
 
 
 
-
 def change_hostname(new_hostname):
     try:
-        commands = [
-            f'echo "{new_hostname}" | sudo tee /etc/hostname',
-            f'sudo sed -i "s/127.0.1.1.*/127.0.1.1\t{new_hostname}/" /etc/hosts',
-            f'sudo hostnamectl set-hostname {new_hostname}'
-        ]
-        for cmd in commands:
-            result = subprocess.run(cmd, shell=True, check=True, text=True, capture_output=True)
-            print(f"Command: {cmd}")
-            print(f"Output: {result.stdout}")
-            print(f"Error (if any): {result.stderr}")
-        # print(f"Hostname successfully changed to {new_hostname}")
+        # Step 1: Check the current hostname to avoid unnecessary changes
+        current_hostname = subprocess.run(
+            "hostname", shell=True, check=True, capture_output=True, text=True
+        ).stdout.strip()
+        
+        if current_hostname == new_hostname:
+            print(f"Hostname is already set to {new_hostname}. No changes required.")
+            return True
+
+        # Step 2: Update /etc/hostname and /etc/hosts in a safe manner
+        # Update /etc/hostname
+        with open('/etc/hostname', 'w') as hostname_file:
+            hostname_file.write(new_hostname)
+        print(f"Updated /etc/hostname to {new_hostname}")
+        
+        # Update /etc/hosts
+        with open('/etc/hosts', 'r') as hosts_file:
+            hosts_content = hosts_file.readlines()
+        
+        with open('/etc/hosts', 'w') as hosts_file:
+            for line in hosts_content:
+                if line.startswith("127.0.1.1"):
+                    # Replace the old hostname with the new one in the hosts file
+                    hosts_file.write(f"127.0.1.1\t{new_hostname}\n")
+                else:
+                    hosts_file.write(line)
+        print(f"Updated /etc/hosts with new hostname: {new_hostname}")
+        
+        # Step 3: Set the new hostname using hostnamectl
+        subprocess.run(f"sudo hostnamectl set-hostname {new_hostname}", shell=True, check=True, capture_output=True, text=True)
+        print(f"Hostname successfully changed to {new_hostname}")
+
         return True
+    
     except subprocess.CalledProcessError as e:
-        print(f"Error changing hostname: {e}")
+        print(f"Error during hostname change process: {e}")
         print(f"Output: {e.output}")
         print(f"Error: {e.stderr}")
         return False
+    except Exception as e:
+        print(f"Unexpected error: {e}")
+        return False
+
 
 
 # Function to set a static IP
