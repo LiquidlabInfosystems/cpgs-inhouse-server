@@ -166,7 +166,7 @@ def get_camera_view_with_space_coordinates():
                 y1 = int(space_coordinates[index][1])
                 x2 = int(space_coordinates[index+1][0])
                 y2 = int(space_coordinates[index+1][1])    
-                cv2.line(frame,(x1,y1),(x2,y2), (0, 255, 0), 2)  
+                cv2.line(frame,(x1,y1),(x2,y2), (255, 255, 255), 3)  
         # if not slotComplete:
         points = Variables.points
         if len(points)>1:
@@ -175,7 +175,7 @@ def get_camera_view_with_space_coordinates():
                 y1 = int(points[index][1])
                 x2 = int(points[index+1][0])
                 y2 = int(points[index+1][1])    
-                cv2.line(frame,(x1,y1),(x2,y2), (0, 255, 0), 2)  
+                cv2.line(frame,(x1,y1),(x2,y2), (255, 255, 255), 3)  
     ret, buffer = cv2.imencode('.jpg', frame)
     frame_bytes = buffer.tobytes()
     return frame_bytes
