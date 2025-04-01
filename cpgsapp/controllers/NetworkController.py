@@ -77,15 +77,15 @@ def change_hostname(new_hostname):
 
         # Step 2: Update /etc/hostname and /etc/hosts in a safe manner
         # Update /etc/hostname
-        with open('sudo /etc/hostname', 'w') as hostname_file:
+        with open('/etc/hostname', 'w') as hostname_file:
             hostname_file.write(new_hostname)
         print(f"Updated /etc/hostname to {new_hostname}")
         
         # Update /etc/hosts
-        with open('sudo /etc/hosts', 'r') as hosts_file:
+        with open('/etc/hosts', 'r') as hosts_file:
             hosts_content = hosts_file.readlines()
         
-        with open('sudo /etc/hosts', 'w') as hosts_file:
+        with open('/etc/hosts', 'w') as hosts_file:
             for line in hosts_content:
                 if line.startswith("127.0.1.1"):
                     # Replace the old hostname with the new one in the hosts file
