@@ -96,7 +96,7 @@ def change_hostname(new_hostname):
         
         # Step 3: Set the new hostname using hostnamectl
         subprocess.run(f"sudo hostnamectl set-hostname {new_hostname}", shell=True, check=True, capture_output=True, text=True)
-        subprocess.run(f"sudo systemctl restart avahi-daemon {new_hostname}", shell=True, check=True, capture_output=True, text=True)
+        # subprocess.run(f"sudo systemctl restart avahi-daemon {new_hostname}", shell=True, check=True, capture_output=True, text=True)
         
 
         print(f"Hostname successfully changed to {new_hostname}")
