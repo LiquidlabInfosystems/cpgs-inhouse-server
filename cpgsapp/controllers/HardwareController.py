@@ -49,6 +49,7 @@ def update_pilot():
             set_pilot_to_green()
             return
         occupied_count = sum(1 for space in spaces if space.get('spaceStatus') == 'occupied')
+        print("pilot updates",occupied_count)
         available_spaces = Variables.TOTALSPACES - occupied_count
         if available_spaces == 0:
             # print("Setting Pilot to Red (All spaces occupied)")
