@@ -82,5 +82,6 @@ def get_space_coordinates():
 def clear_space_coordinates():
     Variables.coordinates = []
     with open('storage/coordinates.txt','w') as coordinate:
-        json.dump(Variables.coordinates, coordinate, indent=4)
+        json.dump(Variables.coordinates, coordinate)
+    Variables.points = []
     return True
