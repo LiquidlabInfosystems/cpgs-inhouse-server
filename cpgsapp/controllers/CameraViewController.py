@@ -67,7 +67,7 @@ def image_to_rowbytes(frame):
 
 # Calling functon for license plate detection
 def dectect_license_plate(space):
-    plate_cascade = cv2.CascadeClassifier(cv2.data.haarcascades + 'haarcascade_russian_plate_number.xml')
+    plate_cascade = cv2.CascadeClassifier(cv2.data.haarcascades + 'haarcascade_russian_plate_number.xml') 
     # Load image
     isLicensePlate = False
     # gray = cv2.cvtColor(space, cv2.COLOR_BGR2GRAY)
@@ -77,7 +77,6 @@ def dectect_license_plate(space):
         isLicensePlate = True 
         cv2.rectangle(space, (x, y), (x + w, y + h), (0, 255, 0), 2)  
         license_plate = space[y:y+h, x:x+w]
-    
     # space  = cv2.cvtColor(space, cv2.COLOR_RGB2GRAY)
     return space, license_plate, isLicensePlate
 
@@ -153,14 +152,30 @@ def load_camera_view(max_attempts=5, delay=0.05):
 # Function called for getting the camera view with space coordinates
 def get_camera_view_with_space_coordinates():
     frame = load_camera_view()
-    with open('storage/coordinates.txt','r')as data:
+    with open('storage/coordinates.txt', 'r') as data:
+        # content = data.read().strip()  # Remove spaces/newlines
+        # print(len(content))
+        # if not content:  # If content is still empty
+        #     print("Error: File contains no valid data")
+        slotComplete = False
         for space_coordinates in json.load(data):
-                for index in range (0,len(space_coordinates)-1):
-                    x1 = int(space_coordinates[index][0])
-                    y1 = int(space_coordinates[index][1])
-                    x2 = int(space_coordinates[index+1][0])
-                    y2 = int(space_coordinates[index+1][1])    
-                    cv2.line(frame,(x1,y1),(x2,y2), (0, 255, 0), 2)  
+            # print(space_coordinates)
+            slotComplete = True
+            for index in range (0,len(space_coordinates)-1):
+                x1 = int(space_coordinates[index][0])
+                y1 = int(space_coordinates[index][1])
+                x2 = int(space_coordinates[index+1][0])
+                y2 = int(space_coordinates[index+1][1])    
+                cv2.line(frame,(x1,y1),(x2,y2), (0, 255, 0), 2)  
+        # if not slotComplete:
+        points = Variables.points
+        if len(points)>1:
+            for index in range (0,len(points)-1):
+                x1 = int(points[index][0])
+                y1 = int(points[index][1])
+                x2 = int(points[index+1][0])
+                y2 = int(points[index+1][1])    
+                cv2.line(frame,(x1,y1),(x2,y2), (0, 255, 0), 2)  
     ret, buffer = cv2.imencode('.jpg', frame)
     frame_bytes = buffer.tobytes()
     return frame_bytes
