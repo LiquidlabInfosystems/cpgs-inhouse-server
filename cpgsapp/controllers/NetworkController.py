@@ -9,13 +9,13 @@
 import socket
 import subprocess
 import time
-
-from requests import request
 from cpgsapp.controllers.FileSystemContoller import get_space_info
 from cpgsapp.models import NetworkSettings
 from cpgsapp.serializers import NetworkSettingsSerializer
 from storage import Variables
 
+
+# Helper funtin to chumk the data
 def chunk_data(image_data, chunk_size):
     chunks = []
     for i in range(0, len(image_data), chunk_size):
@@ -24,26 +24,16 @@ def chunk_data(image_data, chunk_size):
 
 
 
-def send_chunks(ip, port, chunks):
-    sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-    total_chunks = len(chunks)
-    for i, chunk in enumerate(chunks):
-        # Add metadata (e.g., chunk number and total chunk count)
-        metadata = f"{i+1}/{total_chunks}".encode('utf-8')
-        message = metadata + b"|" + chunk
-        sock.sendto(message, (ip, port))  # Send each chunk to the receiver
-        print(f"Sent chunk {i+1}/{total_chunks}")
-    sock.close()
-
-
-
-
+# Update the main server when there is a dectectin in the monitoring spaces
 def update_server():
     """Detects changes in space status and updates the main server."""
     current_spaces = get_space_info()
     if current_spaces != {}:
         NetworkSetting = NetworkSettings.objects.first()
         last_spaces = Variables.LAST_SPACES
+        
+        # make sure 3 sec delay - message que
+        # get the curent
         for space in range(Variables.TOTALSPACES):
             if current_spaces[space]['spaceStatus'] != last_spaces[space]['spaceStatus']:
                 sd = current_spaces[space]
@@ -64,45 +54,30 @@ def update_server():
 
 
 
+# helps in changing the hostname of the device
 def change_hostname(new_hostname):
     try:
-        # Step 1: Check the current hostname to avoid unnecessary changes
         current_hostname = subprocess.run(
             "hostname", shell=True, check=True, capture_output=True, text=True
         ).stdout.strip()
-        
         if current_hostname == new_hostname:
             print(f"Hostname is already set to {new_hostname}. No changes required.")
             return True
-
-        # Step 2: Update /etc/hostname and /etc/hosts in a safe manner
-        # Update /etc/hostname
         with open('/etc/hostname', 'w') as hostname_file:
             hostname_file.write(new_hostname)
         print(f"Updated /etc/hostname to {new_hostname}")
-        
-        # Update /etc/hosts
         with open('/etc/hosts', 'r') as hosts_file:
             hosts_content = hosts_file.readlines()
-        
         with open('/etc/hosts', 'w') as hosts_file:
             for line in hosts_content:
                 if line.startswith("127.0.1.1"):
-                    # Replace the old hostname with the new one in the hosts file
                     hosts_file.write(f"127.0.1.1\t{new_hostname}\n")
                 else:
                     hosts_file.write(line)
         print(f"Updated /etc/hosts with new hostname: {new_hostname}")
-        
-        # Step 3: Set the new hostname using hostnamectl
         subprocess.run(f"sudo hostnamectl set-hostname {new_hostname}", shell=True, check=True, capture_output=True, text=True)
-        # subprocess.run(f"sudo systemctl restart avahi-daemon {new_hostname}", shell=True, check=True, capture_output=True, text=True)
-        
-
         print(f"Hostname successfully changed to {new_hostname}")
-
         return True
-    
     except subprocess.CalledProcessError as e:
         print(f"Error during hostname change process: {e}")
         print(f"Output: {e.output}")
@@ -134,6 +109,7 @@ def set_static_ip(data):
         return False
 
 
+
 # Function to set a dynamic IP
 def set_dynamic_ip(data):
     """Configures a dynamic IP address."""
@@ -151,11 +127,13 @@ def set_dynamic_ip(data):
         return False
 
 
+
 # Function to get network settings
 def get_network_settings():
     """Retrieves the current network settings."""
     settings = NetworkSettings.objects.first()
     return NetworkSettingsSerializer(settings).data if settings else {}
+
 
 
 # Function to save network settings
@@ -176,6 +154,7 @@ def saveNetworkSetting(new_settings):
         subprocess.run(["sudo", "reboot", "now"], check=True, text=True)
     except subprocess.CalledProcessError as e:
         print(f"Error saving network settings: {e}")
+
 
 
 # SCAN WIFI
@@ -207,17 +186,13 @@ def connect_to_wifi(ssid, password):
     if not available_ssids:
         print("No WiFi networks found or scanning failed.")
         return 401
-    # print(f"Available networks: {', '.join(available_ssids)}")
     if ssid not in available_ssids:
         print(f"Error: Network '{ssid}' not found in scan results.")
         return 401
     try:
-       # Step 1: Connect to the WiFi network
         connect_cmd = f'sudo nmcli dev wifi connect "{ssid}" password "{password}"'
         result = subprocess.run(connect_cmd, shell=True, check=True, text=True, capture_output=True)
         print(f"Ready to Connect with WiFi: {ssid}")
-        
-        # Step 3: Modify the connection to enable autoconnect using the UUID
         modify_cmd = f'sudo nmcli connection modify "preconfigured" connection.autoconnect yes'
         subprocess.run(modify_cmd, shell=True, check=True, text=True)
         print(f"Autoconnect enabled for {ssid}")

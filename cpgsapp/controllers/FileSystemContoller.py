@@ -6,7 +6,6 @@
 
 #Importing Functions
 import json
-import time
 import cv2
 from storage import Variables
 
@@ -20,6 +19,8 @@ def save_image(filename, image):
         file.write(image_bytes)
     return True
 
+
+# helps in getting the latest space data
 def get_space_info():
     try:
         with open("storage/spaceInfo.json", "r") as f:
@@ -28,19 +29,21 @@ def get_space_info():
         print("Error reading JSON, using empty data.")
         return {}
 
+
+
+# helps in updating the lastest space data
 def update_space_info(new_data):
     try:
-        # Write new data to the file
         with open("storage/spaceInfo.json", "w") as spaces:
             json.dump(new_data, spaces)
             return True
-            
     except json.JSONDecodeError as e:
         print(f"JSON error: {e}")
         return False
     except FileNotFoundError:
         print("File not found or directory doesn't exist")
         return False
+
 
 
 # Function to get to know which mode is being used (live/config)
@@ -50,16 +53,19 @@ def get_mode_info():
     return mode
 
 
+
 # Function called to change from config to live
 def change_mode_to_live():
     with open('storage/mode.txt','w') as modeData:
         modeData.write("live")
 
 
+
 # Function called to change from live to config
 def change_mode_to_config():
     with open('storage/mode.txt','w') as modeData:
         modeData.write("config")
+
 
 
 # Function to save space coordinates
@@ -72,11 +78,13 @@ def save_space_coordinates(x, y):
         Variables.points = []
 
 
+
 # Function to get space coordinates
 def get_space_coordinates():
         with open('storage/coordinates.txt','r')as data:
             return json.load(data)
         
+
 
 # To clear the space coordinates
 def clear_space_coordinates():

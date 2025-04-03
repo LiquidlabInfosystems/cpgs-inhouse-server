@@ -21,12 +21,11 @@ urlpatterns = [
     path('monitor_handler', views.MonitorHandler.as_view()),
     path('calibrate_handler', views.CalibrateHandler.as_view()),
     path('mode_handler', views.ModeHandler.as_view()),
-    # path('initiate', views.initiate),
     path('reboot', views.reboot),
     path('',TemplateView.as_view(template_name = 'index.html'))
 ] + staticfiles_urlpatterns()
 
-# if not ThreadalreadyRunning:
-    # ThreadalreadyRunning = True
-threading.Thread(target=views.ModeMonitor).start()  # Start the mode monitor thread
+if not ThreadalreadyRunning:
+    ThreadalreadyRunning = True
+    threading.Thread(target=views.ModeMonitor).start() 
 

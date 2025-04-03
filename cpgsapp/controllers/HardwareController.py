@@ -6,11 +6,11 @@
 
 
 # Importing functions
-import json
 import subprocess
 from . import FileSystemContoller
 from cpgsserver.settings import IS_PI_CAMERA_SOURCE
 from storage import Variables
+
 
 
 # GPIO setup (only if running on a Raspberry Pi)
@@ -23,6 +23,7 @@ else:
     GREENLIGHT = REDLIGHT = None  # Avoid errors if running on non-RPi devices
 
 
+
 # Function to set the pilot to green
 def set_pilot_to_green():
     """Turn on the green light and turn off the red light."""
@@ -31,12 +32,14 @@ def set_pilot_to_green():
         REDLIGHT.on()
 
 
+
 # Function to set the pilot to red
 def set_pilot_to_red():
     """Turn on the red light and turn off the green light."""
     if GREENLIGHT and REDLIGHT:
         GREENLIGHT.on()
         GREENLIGHT.off()
+
 
 
 # Function to update pilot light based on space availability
@@ -52,38 +55,11 @@ def update_pilot():
         print("pilot updates",occupied_count)
         available_spaces = Variables.TOTALSPACES - occupied_count
         if available_spaces == 0:
-            # print("Setting Pilot to Red (All spaces occupied)")
             set_pilot_to_red()
         else:
-            # print("Setting Pilot to Green (Vacant spaces available)")
             set_pilot_to_green()
 
+
+# helps in rebooting the system
 def RebootSystem():
     subprocess.run("sudo reboot", shell=True, check=True)
-
-
-
-def free_camera_device(device="/dev/video0"):
-    try:
-        # Use lsof to find the PID of the process using the device
-        result = subprocess.run(['lsof', device], capture_output=True, text=True)
-        output = result.stdout
-
-        if output:
-            # Extract the PID from the output (second column in lsof output)
-            lines = output.splitlines()
-            if len(lines) > 1:  # First line is header
-                pid = lines[1].split()[1]  # PID is in the second column
-                print(f"Found process {pid} using {device}, terminating it...")
-                # Kill the process
-                subprocess.run(['kill', '-9', pid], check=True)
-                print(f"Process {pid} killed.")
-            else:
-                print(f"No process found using {device}.")
-        else:
-            print(f"No process is currently using {device}.")
-
-    except subprocess.CalledProcessError as e:
-        print(f"Error while trying to kill process: {e}")
-    except Exception as e:
-        print(f"Unexpected error: {e}")
