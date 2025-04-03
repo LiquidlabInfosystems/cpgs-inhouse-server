@@ -30,12 +30,12 @@ def update_server():
     current_spaces = get_space_info()
     if current_spaces != {}:
         NetworkSetting = NetworkSettings.objects.first()
-        last_spaces = Variables.LAST_SPACES
+        # last_spaces = Variables.LAST_SPACES
         
         # make sure 3 sec delay - message que
         # get the curent
         for space in range(Variables.TOTALSPACES):
-            if current_spaces[space]['spaceStatus'] != last_spaces[space]['spaceStatus']:
+            # if current_spaces[space]['spaceStatus'] != last_spaces[space]['spaceStatus']:
                 sd = current_spaces[space]
                 data_to_send = {
                     "spaceID": sd['spaceID'],
