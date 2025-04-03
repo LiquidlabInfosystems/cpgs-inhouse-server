@@ -10,3 +10,4 @@ licensePlateinSpaceInBase64 = ""
 licensePlateBase64 = ""
 space_coordinate_list = []
 TOTALSPACES = 0
+CONFIDENCE_QUEUE = []
