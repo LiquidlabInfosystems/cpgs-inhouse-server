@@ -182,6 +182,8 @@ def liveMode():
         Variables.SPACES.append(obj)
         if len(Variables.CONFIDENCE_QUEUE) != Variables.TOTALSPACES:
             Variables.CONFIDENCE_QUEUE.append(FixedFIFO(CONSISTENCY_LEVEL))
+    
+    Variables.LAST_SPACES = get_space_info()   
     update_space_info(Variables.SPACES)
    
     
