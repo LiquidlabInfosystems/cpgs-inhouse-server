@@ -170,7 +170,7 @@ def liveMode():
     poslist = get_space_coordinates()
     Variables.SPACES = []
     Variables.TOTALSPACES = len(poslist)
-    queque = FixedFIFO(CONSISTENCY_LEVEL)
+    # queque = FixedFIFO(CONSISTENCY_LEVEL)
     for spaceID in range(Variables.TOTALSPACES):
         obj = {
             'spaceID':spaceID,
@@ -180,7 +180,8 @@ def liveMode():
             'licensePlate':""
         }
         Variables.SPACES.append(obj)
-        Variables.CONFIDENCE_QUEUE.append(queque)
+        if len(Variables.CONFIDENCE_QUEUE) != Variables.TOTALSPACES:
+            Variables.CONFIDENCE_QUEUE.append(FixedFIFO(CONSISTENCY_LEVEL))
     update_space_info(Variables.SPACES)
    
     
@@ -191,12 +192,17 @@ def liveMode():
         isLicensePlate = getSpaceMonitorWithLicensePlateDectection(spaceID, x, y, w, h)
         Variables.CONFIDENCE_QUEUE[spaceID].enqueue(isLicensePlate)
         
-    # update_server()
-        if spaceID == 0:
-            print("confidece queue",Variables.CONFIDENCE_QUEUE[spaceID].get_queue())
-    
-    if IS_PI_CAMERA_SOURCE:
-        update_pilot()
+        Variables.CONFIDENCE_QUEUE[spaceID].enqueue(isLicensePlate)
+        queue = Variables.CONFIDENCE_QUEUE[spaceID].get_queue()
+        Occupied_count = queue.count(True)
+        Vaccency_count = queue.count(False)
+        Occupied_confidence = int((Occupied_count/CONSISTENCY_LEVEL)*100)
+        Vaccency_confidence = int((Vaccency_count/CONSISTENCY_LEVEL)*100)
+        
+        if Occupied_confidence > CONFIDENCE_LEVEL or  Vaccency_confidence > CONFIDENCE_LEVEL:
+            update_server()
+            if IS_PI_CAMERA_SOURCE:
+                update_pilot()
 
 
 

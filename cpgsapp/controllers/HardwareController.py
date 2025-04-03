@@ -36,6 +36,7 @@ def set_pilot_to_green():
 # Function to set the pilot to red
 def set_pilot_to_red():
     """Turn on the red light and turn off the green light."""
+    print('pilot changing')
     if GREENLIGHT and REDLIGHT:
         GREENLIGHT.on()
         GREENLIGHT.off()
@@ -52,7 +53,7 @@ def update_pilot():
             set_pilot_to_green()
             return
         occupied_count = sum(1 for space in spaces if space.get('spaceStatus') == 'occupied')
-        print("pilot updates",occupied_count)
+        # print("pilot updates",occupied_count)
         available_spaces = Variables.TOTALSPACES - occupied_count
         if available_spaces == 0:
             set_pilot_to_red()
