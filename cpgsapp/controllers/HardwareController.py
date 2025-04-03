@@ -39,7 +39,7 @@ def set_pilot_to_red():
     print('pilot changing')
     if GREENLIGHT and REDLIGHT:
         GREENLIGHT.on()
-        GREENLIGHT.off()
+        REDLIGHT.off()
 
 
 
