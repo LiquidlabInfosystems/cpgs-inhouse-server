@@ -8,6 +8,7 @@
 import base64
 import json
 import time
+from cpgsapp.models import SpaceInfo
 from cpgsapp.utils import FixedFIFO
 import cv2
 import numpy as np
@@ -146,18 +147,17 @@ def get_camera_view_with_space_coordinates():
 #Function called to detect license plate
 def getSpaceMonitorWithLicensePlateDectection(spaceID, x, y, w, h ):
         camera_view = load_camera_view()
+        spaceObject  = SpaceInfo.objects.get(spaceID = spaceID)
         space_view = camera_view[y:y+h, x:x+w]
-        Variables.licensePlateinSpace, Variables.licensePlate, isLicensePlate =  dectect_license_plate(space_view)
-        Variables.licensePlateinSpaceInBase64 = image_to_base64(Variables.licensePlateinSpace)
-        for space in Variables.SPACES:
-            if space['spaceID'] == spaceID:
-                Variables.licensePlateBase64 = ""
-                if isLicensePlate:
-                    Variables.licensePlateBase64 = image_to_base64(Variables.licensePlate)
-                    space['spaceStatus'] = "occupied"
-                space['spaceFrame'] = Variables.licensePlateinSpaceInBase64
-                space['licensePlate'] = Variables.licensePlateBase64
-        update_space_info(Variables.SPACES)
+        licensePlateinSpace, licensePlate, isLicensePlate =  dectect_license_plate(space_view)
+        if isLicensePlate:
+            spaceObject.spaceStatus =   "occupied"
+            spaceObject.licensePlate =  image_to_base64(licensePlate)
+            spaceObject.spaceFrame =  image_to_base64(space_view)
+        else:
+            spaceObject.spaceStatus =   "vaccant"
+            spaceObject.spaceFrame =  image_to_base64(space_view)
+        spaceObject.save()
         return isLicensePlate
 
 
@@ -168,43 +168,41 @@ def liveMode():
     SCAN the parking slot FOR VEHICLE
     '''      
     poslist = get_space_coordinates()
-    Variables.SPACES = []
     Variables.TOTALSPACES = len(poslist)
-    # queque = FixedFIFO(CONSISTENCY_LEVEL)
     for spaceID in range(Variables.TOTALSPACES):
-        obj = {
-            'spaceID':spaceID,
-            'spaceStatus':'vaccant',
-            'spaceFrame':'',
-            'licenseNumber':"",
-            'licensePlate':""
-        }
-        Variables.SPACES.append(obj)
         if len(Variables.CONFIDENCE_QUEUE) != Variables.TOTALSPACES:
             Variables.CONFIDENCE_QUEUE.append(FixedFIFO(CONSISTENCY_LEVEL))
-    
-    Variables.LAST_SPACES = get_space_info()   
-    update_space_info(Variables.SPACES)
-   
-    
     for spaceID, pos in enumerate(poslist):
         SpaceCoordinates = np.array([[pos[0][0], pos[0][1]], [pos[1][0], pos[1][1]], [pos[2][0], pos[2][1]], [pos[3][0], pos[3][1]]])
         pts = np.array(SpaceCoordinates, np.int32)
         x, y, w, h = cv2.boundingRect(pts)
         isLicensePlate = getSpaceMonitorWithLicensePlateDectection(spaceID, x, y, w, h)
         Variables.CONFIDENCE_QUEUE[spaceID].enqueue(isLicensePlate)
-        
-        Variables.CONFIDENCE_QUEUE[spaceID].enqueue(isLicensePlate)
         queue = Variables.CONFIDENCE_QUEUE[spaceID].get_queue()
         Occupied_count = queue.count(True)
         Vaccency_count = queue.count(False)
         Occupied_confidence = int((Occupied_count/CONSISTENCY_LEVEL)*100)
         Vaccency_confidence = int((Vaccency_count/CONSISTENCY_LEVEL)*100)
+        monitoring_spaces = get_space_info()
+        current_space = monitoring_spaces[spaceID]
         
-        if Occupied_confidence > CONFIDENCE_LEVEL or  Vaccency_confidence > CONFIDENCE_LEVEL:
-            update_server()
+        
+        if Occupied_confidence == CONFIDENCE_LEVEL:
+            current_space_status = current_space['spaceStatus']
+            current_licensePlate = current_space['licensePlate']
+            update_server(spaceID, current_space_status, current_licensePlate)
             if IS_PI_CAMERA_SOURCE:
-                update_pilot()
+                update_pilot(current_licensePlate)
+        
+        elif Vaccency_confidence == CONFIDENCE_LEVEL:
+            current_space_status = current_space['spaceStatus']
+            current_licensePlate = current_space['licensePlate']
+            update_server(spaceID, current_space_status, current_licensePlate)
+            if IS_PI_CAMERA_SOURCE:
+                update_pilot(current_licensePlate)
+              
+    
+    return get_space_info()
 
 
 
@@ -216,41 +214,40 @@ def get_monitoring_spaces():
     SCAN the parking slot FOR VEHICLE
     '''      
     poslist = get_space_coordinates()
-    Variables.SPACES = []
     Variables.TOTALSPACES = len(poslist)
     for spaceID in range(Variables.TOTALSPACES):
-        obj = {
-            'spaceID':spaceID,
-            'spaceStatus':'vaccant',
-            'spaceFrame':'',
-            'licenseNumber':"",
-            'licensePlate':""
-        }
-        Variables.SPACES.append(obj)
         if len(Variables.CONFIDENCE_QUEUE) != Variables.TOTALSPACES:
             Variables.CONFIDENCE_QUEUE.append(FixedFIFO(CONSISTENCY_LEVEL))
-            
-    Variables.LAST_SPACES = get_space_info()        
-    update_space_info(Variables.SPACES)
     for spaceID, pos in enumerate(poslist):
         SpaceCoordinates = np.array([[pos[0][0], pos[0][1]], [pos[1][0], pos[1][1]], [pos[2][0], pos[2][1]], [pos[3][0], pos[3][1]]])
         pts = np.array(SpaceCoordinates, np.int32)
         x, y, w, h = cv2.boundingRect(pts)
         isLicensePlate = getSpaceMonitorWithLicensePlateDectection(spaceID, x, y, w, h)
-        
-        # update_server()
         Variables.CONFIDENCE_QUEUE[spaceID].enqueue(isLicensePlate)
         queue = Variables.CONFIDENCE_QUEUE[spaceID].get_queue()
         Occupied_count = queue.count(True)
         Vaccency_count = queue.count(False)
         Occupied_confidence = int((Occupied_count/CONSISTENCY_LEVEL)*100)
         Vaccency_confidence = int((Vaccency_count/CONSISTENCY_LEVEL)*100)
+        monitoring_spaces = get_space_info()
+        current_space = monitoring_spaces[spaceID]
         
-        if Occupied_confidence > CONFIDENCE_LEVEL or  Vaccency_confidence > CONFIDENCE_LEVEL:
-            update_server()
+        
+        if Occupied_confidence == CONFIDENCE_LEVEL:
+            current_space_status = current_space['spaceStatus']
+            current_licensePlate = current_space['licensePlate']
+            update_server(spaceID, current_space_status, current_licensePlate)
             if IS_PI_CAMERA_SOURCE:
-                update_pilot()
-                
+                update_pilot(current_licensePlate)
+        
+        elif Vaccency_confidence == CONFIDENCE_LEVEL:
+            current_space_status = current_space['spaceStatus']
+            current_licensePlate = current_space['licensePlate']
+            update_server(spaceID, current_space_status, current_licensePlate)
+            if IS_PI_CAMERA_SOURCE:
+                update_pilot(current_licensePlate)
+              
+    
     return get_space_info()
 
 
