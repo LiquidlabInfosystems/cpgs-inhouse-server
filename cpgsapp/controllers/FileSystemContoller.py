@@ -7,8 +7,10 @@
 #Importing Functions
 import json
 import cv2
+from cpgsapp.models import SpaceInfo
+from cpgsapp.serializers import SpaceInfoSerializer
 from storage import Variables
-
+from django.db import connection
 
 # Function to save the image 
 def save_image(filename, image):
@@ -22,12 +24,15 @@ def save_image(filename, image):
 
 # helps in getting the latest space data
 def get_space_info():
-    try:
-        with open("storage/spaceInfo.json", "r") as f:
-            return json.loads(f.read().strip()) or {}
-    except (json.JSONDecodeError, FileNotFoundError):
-        print("Error reading JSON, using empty data.")
-        return {}
+    space = SpaceInfo.objects.all()
+    serializedSpace = SpaceInfoSerializer(space, many=True)
+    return serializedSpace.data
+    # try:
+    #     with open("storage/spaceInfo.json", "r") as f:
+    #         return json.loads(f.read().strip()) or {}
+    # except (json.JSONDecodeError, FileNotFoundError):
+    #     print("Error reading JSON, using empty data.")
+    #     return {}
 
 
 
@@ -73,6 +78,7 @@ def save_space_coordinates(x, y):
     Variables.points.append((x, y))
     if len(Variables.points)%5 == 0:
         Variables.coordinates.append(Variables.points)
+        SpaceInfo.objects.create(spaceID = len(Variables.coordinates)-1)
         with open('storage/coordinates.txt','w') as coordinate:
             json.dump(Variables.coordinates, coordinate, indent=4)
         Variables.points = []
@@ -89,6 +95,10 @@ def get_space_coordinates():
 # To clear the space coordinates
 def clear_space_coordinates():
     Variables.coordinates = []
+    
+    SpaceInfo.objects.all().delete()
+    with connection.cursor() as cursor:
+        cursor.execute("DELETE FROM sqlite_sequence WHERE name='cpgsapp_spaceinfo'")
     with open('storage/coordinates.txt','w') as coordinate:
         json.dump(Variables.coordinates, coordinate)
     Variables.points = []

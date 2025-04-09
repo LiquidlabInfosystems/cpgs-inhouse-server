@@ -36,29 +36,39 @@ def set_pilot_to_green():
 # Function to set the pilot to red
 def set_pilot_to_red():
     """Turn on the red light and turn off the green light."""
-    print('pilot changing')
+    # print('pilot changing')
     if GREENLIGHT and REDLIGHT:
         GREENLIGHT.on()
+        REDLIGHT.off()
+
+# Function to set the pilot to red
+def set_pilot_to_off():
+    """Turn on the red light and turn off the green light."""
+    # print('pilot changing')
+    if GREENLIGHT and REDLIGHT:
+        GREENLIGHT.off()
         REDLIGHT.off()
 
 
 
 # Function to update pilot light based on space availability
-def update_pilot():
-    """Update pilot light based on occupied spaces."""
-    spaces = FileSystemContoller.get_space_info()
-    if spaces != {}:
-        if not spaces:
-            print("No space data found. Defaulting to green light.")
-            set_pilot_to_green()
-            return
-        occupied_count = sum(1 for space in spaces if space.get('spaceStatus') == 'occupied')
+def update_pilot(mode):
+    # """Update pilot light based on occupied spaces."""
+    # spaces = FileSystemContoller.get_space_info()
+    # if spaces != {}:
+    #     if not spaces:
+    #         print("No space data found. Defaulting to green light.")
+    #         set_pilot_to_green()
+    #         return
+    #     occupied_count = sum(1 for space in spaces if space.get('spaceStatus') == 'occupied')
         # print("pilot updates",occupied_count)
-        available_spaces = Variables.TOTALSPACES - occupied_count
-        if available_spaces == 0:
+        # available_spaces = Variables.TOTALSPACES - occupied_count
+        if mode == 'occupied':
             set_pilot_to_red()
-        else:
+        elif mode == 'vaccant':
             set_pilot_to_green()
+        else:
+            set_pilot_to_off()
 
 
 # helps in rebooting the system

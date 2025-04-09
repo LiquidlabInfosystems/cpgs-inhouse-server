@@ -10,7 +10,7 @@ import socket
 import subprocess
 import time
 from cpgsapp.controllers.FileSystemContoller import get_space_info
-from cpgsapp.models import NetworkSettings
+from cpgsapp.models import NetworkSettings, SpaceInfo
 from cpgsapp.serializers import NetworkSettingsSerializer
 from storage import Variables
 
@@ -25,32 +25,25 @@ def chunk_data(image_data, chunk_size):
 
 
 # Update the main server when there is a dectectin in the monitoring spaces
-def update_server():
+def update_server(spaceId, spaceStatus, licensePlate):
+    # print('updating...')
     """Detects changes in space status and updates the main server."""
-    current_spaces = get_space_info()
-    if current_spaces != {}:
-        NetworkSetting = NetworkSettings.objects.first()
-        # last_spaces = Variables.LAST_SPACES
-        
-        # make sure 3 sec delay - message que
-        # get the curent
-        for space in range(Variables.TOTALSPACES):
-            # if current_spaces[space]['spaceStatus'] != last_spaces[space]['spaceStatus']:
-                sd = current_spaces[space]
-                data_to_send = {
-                    "spaceID": sd['spaceID'],
-                    "spaceStatus": sd['spaceStatus'],
-                    "licensePlate": sd['licensePlate']
-                }
-                sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-                CHUNK_SIZE = 20
-                MESSAGE = f"{data_to_send}".encode()    
-                chunks = chunk_data(MESSAGE, CHUNK_SIZE)
-                for chuck in chunks:
-                    sock.sendto(chuck, (NetworkSetting.server_ip, NetworkSetting.server_port))
-                sock.close()
-                print("Dectection update send to server - spaceID : ",data_to_send['spaceID'], ", status : ",data_to_send['spaceStatus'], ", server Address : ", NetworkSetting.server_ip, ":", NetworkSetting.server_port)
-                break
+    # print(spaceStatus)
+    NetworkSetting = NetworkSettings.objects.first()
+    data_to_send = {
+        "spaceID": spaceId,
+        "spaceStatus": spaceStatus,
+        "licensePlate": licensePlate
+        }
+    sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    CHUNK_SIZE = 20
+    MESSAGE = f"{data_to_send}".encode()    
+    chunks = chunk_data(MESSAGE, CHUNK_SIZE)
+    for chuck in chunks:
+        sock.sendto(chuck, (NetworkSetting.server_ip, NetworkSetting.server_port))
+    sock.close()
+    print("Dectection update send to server - spaceID : ",data_to_send['spaceID'], ", status : ",data_to_send['spaceStatus'], ", server Address : ", NetworkSetting.server_ip, ":", NetworkSetting.server_port)
+
 
 
 
