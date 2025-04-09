@@ -5,7 +5,7 @@
 # Description: Serializers for all the database models
 
 from rest_framework import serializers
-from cpgsapp.models import Account, NetworkSettings
+from cpgsapp.models import Account, NetworkSettings, SpaceInfo
 
 class NetworkSettingsSerializer(serializers.ModelSerializer):
      class Meta:
@@ -14,12 +14,11 @@ class NetworkSettingsSerializer(serializers.ModelSerializer):
 
 class SpaceInfoSerializer(serializers.ModelSerializer):
      class Meta:
-        model = NetworkSettings
+        model = SpaceInfo
         fields = "__all__"
 
 class AccountSerializer(serializers.ModelSerializer):
      class Meta:
         model = Account
         fields = "__all__"
-
 
