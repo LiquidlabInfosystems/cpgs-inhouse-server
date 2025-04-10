@@ -40,3 +40,10 @@ class Account(models.Model):
         return f"Network Settings ({self.username})"
 
 
+class SpaceInfo(models.Model):
+    space_id = models.CharField(max_length=100,default="admin")
+    space_status = models.CharField(max_length=100,default="admin")
+
+    def __str__(self):
+        return f"Network Settings ({self.username})"
+
