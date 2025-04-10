@@ -226,18 +226,10 @@ def get_monitoring_spaces():
     Variables.SPACES = []
     Variables.TOTALSPACES = len(poslist)
     for spaceID in range(Variables.TOTALSPACES):
-        obj = {
-            'spaceID':spaceID,
-            'spaceStatus':'vaccant',
-            'spaceFrame':'',
-            'licenseNumber':"",
-            'licensePlate':""
-        }
-        Variables.SPACES.append(obj)
         if len(Variables.CONFIDENCE_QUEUE) != Variables.TOTALSPACES:
             Variables.CONFIDENCE_QUEUE.append(FixedFIFO(CONSISTENCY_LEVEL))
             
-    Variables.LAST_SPACES = get_space_info()        
+    # Variables.LAST_SPACES = get_space_info()        
     update_space_info(Variables.SPACES)
     for spaceID, pos in enumerate(poslist):
         SpaceCoordinates = np.array([[pos[0][0], pos[0][1]], [pos[1][0], pos[1][1]], [pos[2][0], pos[2][1]], [pos[3][0], pos[3][1]]])
@@ -250,15 +242,12 @@ def get_monitoring_spaces():
         Vaccency_count = queue.count(False)
         Occupied_confidence = int((Occupied_count/CONSISTENCY_LEVEL)*100)
         Vaccency_confidence = int((Vaccency_count/CONSISTENCY_LEVEL)*100)
-        # print("Vaccency_confidence",Vaccency_confidence)
-        # print("Occupied_confidence",Occupied_confidence)
-        # print("vaccacy : ",Vaccency_confidence)
         if Occupied_confidence >= CONFIDENCE_LEVEL:
-            update_server(spaceID, 'occupied')
+            # update_server(spaceID, 'occupied')
             if IS_PI_CAMERA_SOURCE:
                 update_pilot('occupied')
         elif Vaccency_confidence >= CONFIDENCE_LEVEL:
-            update_server(spaceID, 'vaccant')
+            # update_server(spaceID, 'vaccant')
             if IS_PI_CAMERA_SOURCE:
                 update_pilot('vaccant')
     
