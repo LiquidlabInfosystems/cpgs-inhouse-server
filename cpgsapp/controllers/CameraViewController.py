@@ -280,9 +280,9 @@ def get_monitoring_spaces():
             
             print(Variables.pilotStatusofEachSpace)
             if(all(Variables.pilotStatusofEachSpace)):
-                update_pilot('vaccant')
-            else:
                 update_pilot('occupied')
+            else:
+                update_pilot('vaccant')
         
         response.append(Variables.Cspace)
         
