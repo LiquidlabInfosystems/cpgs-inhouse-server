@@ -15,7 +15,7 @@ from cpgsapp.controllers.FileSystemContoller import get_space_coordinates, get_s
 from cpgsapp.controllers.HardwareController import  update_pilot
 from cpgsapp.controllers.NetworkController import update_server
 from cpgsserver.settings import CONFIDENCE_LEVEL, CONSISTENCY_LEVEL, IS_PI_CAMERA_SOURCE
-# from storage import InMemory, Variables
+from storage import Variables
 from storage import Disk
 # from storage.Disk import load_frame_from_binary, save_frame_to_binary
 # licensePlateStorage = InMemory.InMemory()
@@ -32,7 +32,8 @@ if IS_PI_CAMERA_SOURCE:
     config = Variables.cap.create_preview_configuration(main={"size":(1280, 720)})
     Variables.cap.configure(config)
     Variables.cap.start()
-else: Variables.cap = cv2.VideoCapture(0)
+else: 
+    Variables.cap = cv2.VideoCapture(0)
 
 # queque = FixedFIFO(CONSISTENCY_LEVEL)
 
