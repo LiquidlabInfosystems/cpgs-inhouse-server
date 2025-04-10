@@ -8,7 +8,7 @@
 import time
 from rest_framework.response import Response
 from django.shortcuts import HttpResponse
-from cpgsapp.controllers.HardwareController import RebootSystem
+from cpgsapp.controllers.HardwareController import RebootSystem, set_pilot_to_green, set_pilot_to_off, set_pilot_to_red
 from cpgsapp.controllers.NetworkController import (
     change_hostname, connect_to_wifi, get_network_settings, 
     set_dynamic_ip, set_static_ip
@@ -52,6 +52,28 @@ def ModeMonitor():
             /////  //       ////// //  ///////
             """                  
     print(text_art)
+    
+    set_pilot_to_off()
+    time.sleep(.5)
+    set_pilot_to_green()
+    time.sleep(.5)
+    set_pilot_to_red()
+    time.sleep(.5)
+    set_pilot_to_off()
+    time.sleep(.5)
+    set_pilot_to_green()
+    time.sleep(.5)
+    set_pilot_to_red()
+    time.sleep(.5)
+    set_pilot_to_off()
+    time.sleep(.5)
+    set_pilot_to_green()
+    time.sleep(.5)
+    set_pilot_to_red()
+    time.sleep(.5)
+    
+    set_pilot_to_off()
+    
     while True:
         time.sleep(1)
         mode = get_mode_info()
