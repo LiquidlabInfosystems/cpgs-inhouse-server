@@ -25,32 +25,32 @@ def chunk_data(image_data, chunk_size):
 
 
 # Update the main server when there is a dectectin in the monitoring spaces
-def update_server():
+def update_server(spaceId, status):
     """Detects changes in space status and updates the main server."""
     current_spaces = get_space_info()
+    # print("change confirmed", status)
     if current_spaces != {}:
         NetworkSetting = NetworkSettings.objects.first()
-        # last_spaces = Variables.LAST_SPACES
-        
-        # make sure 3 sec delay - message que
-        # get the curent
-        for space in range(Variables.TOTALSPACES):
-            # if current_spaces[space]['spaceStatus'] != last_spaces[space]['spaceStatus']:
-                sd = current_spaces[space]
-                data_to_send = {
-                    "spaceID": sd['spaceID'],
-                    "spaceStatus": sd['spaceStatus'],
-                    "licensePlate": sd['licensePlate']
-                }
-                sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-                CHUNK_SIZE = 20
-                MESSAGE = f"{data_to_send}".encode()    
-                chunks = chunk_data(MESSAGE, CHUNK_SIZE)
-                for chuck in chunks:
-                    sock.sendto(chuck, (NetworkSetting.server_ip, NetworkSetting.server_port))
-                sock.close()
-                print("Dectection update send to server - spaceID : ",data_to_send['spaceID'], ", status : ",data_to_send['spaceStatus'], ", server Address : ", NetworkSetting.server_ip, ":", NetworkSetting.server_port)
-                break
+        # for space in range(Variables.TOTALSPACES):
+            # check in which space the change is happened
+    print(current_spaces[spaceId]['spaceStatus'] , Variables.LAST_SPACES[spaceId]['spaceStatus'])
+    if current_spaces[spaceId]['spaceStatus'] != Variables.LAST_SPACES[spaceId]['spaceStatus']:
+
+        changeDetectedSpace = current_spaces[spaceId]
+        data_to_send = {
+            "spaceID": changeDetectedSpace['spaceID'],
+            "spaceStatus": status,
+            "licensePlate": changeDetectedSpace['licensePlate']
+        }
+        sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        CHUNK_SIZE = 20
+        MESSAGE = f"{data_to_send}".encode()    
+        chunks = chunk_data(MESSAGE, CHUNK_SIZE)
+        for chuck in chunks:
+            sock.sendto(chuck, (NetworkSetting.server_ip, NetworkSetting.server_port))
+        sock.close()
+        print("Dectection update send to server - spaceID : ",data_to_send['spaceID'], ", status : ",data_to_send['spaceStatus'], ", server Address : ", NetworkSetting.server_ip, ":", NetworkSetting.server_port)
+    # break
 
 
 
