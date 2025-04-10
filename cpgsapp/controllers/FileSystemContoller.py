@@ -91,6 +91,7 @@ def get_space_coordinates():
 # To clear the space coordinates
 def clear_space_coordinates():
     Variables.coordinates = []
+    SpaceInfo.objects.all().delete()
     with open('storage/coordinates.txt','w') as coordinate:
         json.dump(Variables.coordinates, coordinate)
     Variables.points = []
