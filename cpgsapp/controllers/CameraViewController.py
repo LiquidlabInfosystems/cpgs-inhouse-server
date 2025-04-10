@@ -288,10 +288,10 @@ def get_monitoring_spaces():
     if IS_PI_CAMERA_SOURCE:
         
         if(all(pilotStatusofEachSpace)):
-            update_pilot('occupied')
+            update_pilot('vaccant')
             
         else:
-            update_pilot('vaccant')
+            update_pilot('occupied')
   
         
     return response
