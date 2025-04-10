@@ -16,6 +16,7 @@ from cpgsapp.controllers.HardwareController import  update_pilot
 from cpgsapp.controllers.NetworkController import update_server
 from cpgsserver.settings import CONFIDENCE_LEVEL, CONSISTENCY_LEVEL, IS_PI_CAMERA_SOURCE
 from storage import InMemory, Variables
+from storage.Disk import load_frame_from_binary, save_frame_to_binary
 licensePlateStorage = InMemory.InMemory()
 spaceFrameStorage = InMemory.InMemory()
 # InMemory = InMemory()
@@ -153,12 +154,13 @@ def getSpaceMonitorWithLicensePlateDectection(spaceID, x, y, w, h ):
         # for space in Variables.SPACES:
         # if space['spaceID'] == spaceID:
         Variables.licensePlateBase64 = ""
-        if isLicensePlate:
-            Variables.licensePlateBase64 = image_to_base64(Variables.licensePlate)
-            licensePlateStorage.update_base64(image_to_base64(Variables.licensePlate))
+        # if isLicensePlate:
+            # Variables.licensePlateBase64 = image_to_base64(Variables.licensePlate)
+            # licensePlateStorage.update_base64(image_to_base64(Variables.licensePlate))
         #     space['spaceStatus'] = "occupied"
         # space['spaceFrame'] = Variables.licensePlateinSpaceInBase64
-        spaceFrameStorage.update_base64(image_to_base64(Variables.licensePlateinSpace))
+        # spaceFrameStorage.update_base64(image_to_base64(Variables.licensePlateinSpace))
+        save_frame_to_binary(frame=Variables.licensePlateinSpace)
         # space['licensePlate'] = Variables.licensePlateBase64
         # update_space_info(Variables.SPACES)
         return isLicensePlate
@@ -253,6 +255,6 @@ def get_monitoring_spaces():
     
     # print(spaceFrameStorage.get_base64())
                 
-    return [{"spaceID": 0, "spaceStatus": "vaccant", "spaceFrame": spaceFrameStorage.get_base64(), "licenseNumber": "", "licensePlate": licensePlateStorage.get_base64()}]
+    return [{"spaceID": 0, "spaceStatus": "vaccant", "spaceFrame": image_to_base64(load_frame_from_binary()), "licenseNumber": "", "licensePlate": licensePlateStorage.get_base64()}]
 
 
