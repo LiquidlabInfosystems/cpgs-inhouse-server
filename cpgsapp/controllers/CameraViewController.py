@@ -198,26 +198,20 @@ def liveMode():
                 space.space_status = 'occupied'
                 update_server(spaceID, 'occupied',licensePlateBase64)
                 pilotStatusofEachSpace.append(True)
-                if IS_PI_CAMERA_SOURCE:
-                    if(all(pilotStatusofEachSpace)):
-                        update_pilot('vaccant')
-                    else:
-                        update_pilot('occupied')
-                        
         elif Vaccency_confidence == CONFIDENCE_LEVEL:
             if space.space_status == 'occupied':
                 print('vaccant')
                 space.space_status = 'vaccant'
                 update_server(spaceID, 'vaccant', licensePlateBase64)
                 pilotStatusofEachSpace.append(False)
-                if IS_PI_CAMERA_SOURCE:
-                    if(all(pilotStatusofEachSpace)):
-                        update_pilot('vaccant')
-                    else:
-                        update_pilot('occupied')
         space.save()
         
 
+    if IS_PI_CAMERA_SOURCE:
+        if(all(pilotStatusofEachSpace)):
+            update_pilot('vaccant')
+        else:
+            update_pilot('occupied')
 
 
 
@@ -236,7 +230,7 @@ def get_monitoring_spaces():
     
     response = []
        
-    pilotStatusofEachSpace = []
+    # Variables.pilotStatusofEachSpace = []
     for spaceID, pos in enumerate(poslist):
         SpaceCoordinates = np.array([[pos[0][0], pos[0][1]], [pos[1][0], pos[1][1]], [pos[2][0], pos[2][1]], [pos[3][0], pos[3][1]]])
         pts = np.array(SpaceCoordinates, np.int32)
@@ -261,26 +255,35 @@ def get_monitoring_spaces():
                 print('occupied')
                 space.space_status = 'occupied'
                 update_server(spaceID, 'occupied',licensePlateBase64)
-                pilotStatusofEachSpace.append(True)
-                if IS_PI_CAMERA_SOURCE:
-                    if(all(pilotStatusofEachSpace)):
-                        update_pilot('vaccant')
-                    else:
-                        update_pilot('occupied')
-                
+                Variables.Cspace["spaceStatus"] = 'occupied'
+                # Variables.pilotStatusofEachSpace.append(True)
                 
         elif Vaccency_confidence == CONFIDENCE_LEVEL:
             if space.space_status == 'occupied':
                 print('vaccant')
                 space.space_status = 'vaccant'
+                Variables.Cspace["spaceStatus"] = 'occupied'
                 update_server(spaceID, 'vaccant', licensePlateBase64)
-                pilotStatusofEachSpace.append(False)
-                if IS_PI_CAMERA_SOURCE:
-                    if(all(pilotStatusofEachSpace)):
-                        update_pilot('vaccant')
-                    else:
-                        update_pilot('occupied')
+                # Variables.pilotStatusofEachSpace.append(False)
+                
         space.save()
+        
+        # print(Variables.pilotStatusofEachSpace)
+        if IS_PI_CAMERA_SOURCE:
+            spaces = SpaceInfo.objects.all()
+            Variables.pilotStatusofEachSpace = []
+            for space in spaces:
+                if space.space_status == "occupied":
+                    Variables.pilotStatusofEachSpace.append(True)
+                else:
+                    Variables.pilotStatusofEachSpace.append(False)
+            
+            print(Variables.pilotStatusofEachSpace)
+            if(all(Variables.pilotStatusofEachSpace)):
+                update_pilot('vaccant')
+            else:
+                update_pilot('occupied')
+        
         response.append(Variables.Cspace)
         
   
