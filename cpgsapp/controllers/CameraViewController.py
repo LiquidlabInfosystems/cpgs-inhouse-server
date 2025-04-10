@@ -208,10 +208,19 @@ def liveMode():
         
 
     if IS_PI_CAMERA_SOURCE:
-        if(all(pilotStatusofEachSpace)):
-            update_pilot('vaccant')
-        else:
+        spaces = SpaceInfo.objects.all()
+        Variables.pilotStatusofEachSpace = []
+        for space in spaces:
+            if space.space_status == "occupied":
+                Variables.pilotStatusofEachSpace.append(True)
+            else:
+                Variables.pilotStatusofEachSpace.append(False)
+        
+        # print(Variables.pilotStatusofEachSpace)
+        if(all(Variables.pilotStatusofEachSpace)):
             update_pilot('occupied')
+        else:
+            update_pilot('vaccant')
 
 
 
@@ -278,7 +287,7 @@ def get_monitoring_spaces():
                 else:
                     Variables.pilotStatusofEachSpace.append(False)
             
-            print(Variables.pilotStatusofEachSpace)
+            # print(Variables.pilotStatusofEachSpace)
             if(all(Variables.pilotStatusofEachSpace)):
                 update_pilot('occupied')
             else:
