@@ -18,8 +18,8 @@ from cpgsserver.settings import CONFIDENCE_LEVEL, CONSISTENCY_LEVEL, IS_PI_CAMER
 from storage import InMemory, Variables
 from storage import Disk
 # from storage.Disk import load_frame_from_binary, save_frame_to_binary
-licensePlateStorage = InMemory.InMemory()
-spaceFrameStorage = InMemory.InMemory()
+# licensePlateStorage = InMemory.InMemory()
+# spaceFrameStorage = InMemory.InMemory()
 # InMemory = InMemory()
 
 spaceViewStorage = Disk.spaceViewStorage()
