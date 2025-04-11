@@ -17,6 +17,10 @@ from cpgsapp.controllers.HardwareController import  update_pilot
 from cpgsapp.controllers.NetworkController import update_server
 from cpgsserver.settings import CONFIDENCE_LEVEL, CONSISTENCY_LEVEL, IS_PI_CAMERA_SOURCE
 from storage import Variables
+from paddleocr import PaddleOCR
+
+# Initialize PaddleOCR once at module level
+ocr = PaddleOCR(use_angle_cls=True, lang='en')
 # Camera Input Setup
 
 
@@ -155,6 +159,8 @@ def getSpaceMonitorWithLicensePlateDectection(x, y, w, h ):
         if isLicensePlate:
             # licensePlateStorage.save(frame=licensePlate,spaceID=spaceID)
             licensePlateBase64 = image_to_base64(licensePlate)
+            licenseNumber = get_ocr(licensePlateBase64)
+            print(licenseNumber)
             # licensePlateStorage.update_base64(image_to_base64(Variables.licensePlate))
         #     space['spaceStatus'] = "occupied"
         # space['spaceFrame'] = Variables.licensePlateinSpaceInBase64
@@ -221,6 +227,27 @@ def liveMode():
             update_pilot('occupied')
         else:
             update_pilot('vaccant')
+
+
+# Paddle ocr
+def get_ocr(base64_string):
+    try:
+        # Remove 'data:image/jpeg;base64,' prefix if present
+        if ';base64,' in base64_string:
+            base64_string = base64_string.split(';base64,')[-1]
+
+        # Decode base64 string
+        img_data = base64.b64decode(base64_string)
+
+        result = ocr.ocr(img_data, cls=True)
+        if result and isinstance(result, list) and len(result) > 0 and result[0]:
+            # Extract text from the first detected box (safely)
+            ocr_output = result[0][0][1][0] if result[0][0][1] else "No text detected"
+        else:
+            ocr_output = "No text detected"
+        return ocr_output
+    except:
+        return ""
 
 
 
